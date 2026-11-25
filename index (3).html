@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>간호톡톡 | 간호학 용어 퀴즈</title>
+  <style>
+    :root {
+      --pink: #9ed8f2;
+      --pink-dark: #55acd6;
+      --lavender: #cceeff;
+      --cream: #f5fbff;
+      --ink: #3e5968;
+      --muted: #7893a2;
+      --green: #b9e5ef;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 28px 16px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+      background:
+        radial-gradient(circle at 12% 15%, #d9f2ff 0 8%, transparent 8.5%),
+        radial-gradient(circle at 88% 82%, #dcefff 0 10%, transparent 10.5%),
+        linear-gradient(135deg, #effaff, #edf7ff 55%, #f1fbff);
+    }
+    .app {
+      width: min(100%, 560px);
+      background: rgba(255,255,255,.94);
+      border: 2px solid #fff;
+      border-radius: 28px;
+      padding: 30px;
+      box-shadow: 0 18px 55px rgba(112, 87, 130, .13);
+      position: relative;
+      overflow: hidden;
+    }
+    .app::before, .app::after {
+      content: "✿";
+      position: absolute;
+      color: #b8e6f8;
+      font-size: 34px;
+      opacity: .7;
+    }
+    .app::before { top: 13px; right: 22px; }
+    .app::after { bottom: 12px; left: 20px; color: #b9e2f5; }
+    header { text-align: center; margin-bottom: 24px; }
+    .logo { font-size: 13px; letter-spacing: 2px; color: var(--pink-dark); font-weight: 800; }
+    h1 { margin: 8px 0 6px; font-size: clamp(27px, 6vw, 34px); }
+    .subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+    .mascot {
+      width: 76px; height: 76px; margin: 0 auto 12px;
+      display: grid; place-items: center; border-radius: 25px;
+      background: #eaf8ff; font-size: 42px;
+      box-shadow: inset 0 0 0 2px #cceeff;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; animation: pop .25s ease; }
+    @keyframes pop { from {opacity:0; transform:translateY(7px)} to {opacity:1; transform:none} }
+    .intro-card {
+      background: #f2faff; border: 1px dashed #a9ddf2;
+      border-radius: 20px; padding: 18px; text-align: center;
+      line-height: 1.7; font-size: 14px; margin: 22px 0;
+    }
+    .primary, .secondary {
+      border: 0; border-radius: 15px; padding: 14px 20px;
+      font-size: 15px; font-weight: 800; cursor: pointer;
+      transition: transform .15s, filter .15s;
+    }
+    .primary { width: 100%; background: var(--pink); color: white; box-shadow: 0 5px 0 #69b9df; }
+    .primary:hover, .secondary:hover, .choice:hover { transform: translateY(-2px); filter: brightness(1.02); }
+    .secondary { background: #eee9ff; color: #75669b; }
+    button:focus-visible { outline: 3px solid #9278c7; outline-offset: 3px; }
+    .quiz-top { display:flex; justify-content:space-between; align-items:center; margin: 4px 0 12px; font-size:13px; color:var(--muted); font-weight:700; }
+    .progress { height: 9px; border-radius: 99px; background:#eaf3f8; overflow:hidden; margin-bottom:24px; }
+    .progress-fill { height:100%; width:0; background:linear-gradient(90deg, #8fd0ee, #b5e4f7); border-radius:99px; transition:width .3s; }
+    .question-box { background:#f4fbff; border-radius:20px; padding:21px 18px; margin-bottom:17px; }
+    .question-label { color:var(--pink-dark); font-size:12px; font-weight:900; margin-bottom:9px; }
+    .question { font-size:20px; line-height:1.5; font-weight:800; margin:0; }
+    .choices { display:grid; gap:10px; }
+    .choice {
+      width:100%; text-align:left; border:2px solid #eee8f2; border-radius:15px;
+      padding:14px 15px; background:#fff; color:var(--ink); font-size:15px;
+      cursor:pointer; transition:.15s; display:flex; gap:11px; align-items:center;
+    }
+    .choice .letter {
+      flex:0 0 28px; height:28px; display:grid; place-items:center;
+      border-radius:10px; background:#eaf7ff; color:#5799ba; font-weight:900;
+    }
+    .choice.selected { border-color:#a9dff4; background:#f3fbff; }
+    .choice.correct { border-color:#9edbc7; background:#f2fbf8; }
+    .choice.wrong { border-color:#efb7c5; background:#fff6f8; }
+    .choice:disabled { cursor:default; transform:none; }
+    .feedback { display:none; margin-top:15px; padding:14px 16px; border-radius:15px; line-height:1.6; font-size:14px; }
+    .feedback.show { display:block; }
+    .feedback.good { background:#effaf8; color:#39795d; }
+    .feedback.bad { background:#fff4f7; color:#a64f68; }
+    .next-wrap { margin-top:16px; }
+    .result-emoji { text-align:center; font-size:54px; margin:8px 0; }
+    .score { text-align:center; font-size:38px; color:var(--pink-dark); font-weight:900; margin:8px 0; }
+    .result-text { text-align:center; line-height:1.7; color:var(--muted); margin:0 0 22px; }
+    .tiny-note { text-align:center; color:#aa9eae; font-size:11px; margin-top:18px; }
+    @media (max-width:480px) {
+      .app { padding:25px 19px; border-radius:23px; }
+      .question { font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="mascot" aria-hidden="true">🩺</div>
+      <div class="logo">NURSING STUDY TIME</div>
+      <h1>간호톡톡</h1>
+      <p class="subtitle">콩닥콩닥, 간호학 용어를 쉽고 재미있게!</p>
+    </header>
+
+    <section id="start-screen" class="screen active">
+      <div class="intro-card">
+        🌷 간호학 용어가 아직 낯설다면?<br>
+        간단한 객관식 퀴즈로 하나씩 익혀 봐요.<br>
+        총 <strong>5문제</strong>를 풀고 나면 점수를 확인할 수 있어요!
+      </div>
+      <button class="primary" id="start-btn">퀴즈 시작하기 ✨</button>
+    </section>
+
+    <section id="quiz-screen" class="screen">
+      <div class="quiz-top">
+        <span id="question-count">QUESTION 1 / 5</span>
+        <span id="score-count">맞힌 문제 0개</span>
+      </div>
+      <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="question-box">
+        <div class="question-label">🌼 다음 용어의 뜻은?</div>
+        <p class="question" id="question-text"></p>
+      </div>
+      <div class="choices" id="choices"></div>
+      <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      <div class="next-wrap">
+        <button class="primary" id="next-btn" style="display:none">다음 문제 →</button>
+      </div>
+    </section>
+
+    <section id="result-screen" class="screen">
+      <div class="result-emoji" id="result-emoji">🎀</div>
+      <h2 style="text-align:center; margin:0">퀴즈 완료!</h2>
+      <div class="score" id="final-score">5 / 5</div>
+      <p class="result-text" id="result-message"></p>
+      <button class="primary" id="restart-btn">다시 도전하기 💗</button>
+      <p class="tiny-note">간호톡톡과 함께 오늘도 한 걸음 성장!</p>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        term: "활력징후(Vital Signs)의 의미는 무엇일까요?",
+        choices: ["체온, 맥박, 호흡, 혈압", "키, 몸무게, 시력, 청력", "혈당, 콜레스테롤, 체지방", "식사량, 수면 시간, 활동량"],
+        answer: 0,
+        explanation: "활력징후는 체온, 맥박, 호흡, 혈압을 말하며 기본적인 건강 상태를 확인하는 데 사용해요."
+      },
+      {
+        term: "빈맥(Tachycardia)은 어떤 상태일까요?",
+        choices: ["호흡이 느린 상태", "심박수가 빠른 상태", "체온이 낮은 상태", "혈압이 낮은 상태"],
+        answer: 1,
+        explanation: "빈맥은 심박수가 정상적인 범위보다 빠른 상태를 뜻해요."
+      },
+      {
+        term: "무균술(Aseptic Technique)의 주된 목적은 무엇일까요?",
+        choices: ["통증을 줄이기 위해", "수면을 돕기 위해", "미생물에 의한 오염을 예방하기 위해", "체온을 낮추기 위해"],
+        answer: 2,
+        explanation: "무균술은 미생물의 오염과 전파를 막아 감염 위험을 줄이기 위한 방법이에요."
+      },
+      {
+        term: "부종(Edema)은 무엇을 의미할까요?",
+        choices: ["조직에 체액이 과도하게 축적된 상태", "혈액 내 산소가 부족한 상태", "혈당이 낮아진 상태", "체온이 상승한 상태"],
+        answer: 0,
+        explanation: "부종은 조직 사이 공간에 체액이 비정상적으로 많이 쌓여 몸이 붓는 현상이에요."
+      },
+      {
+        term: "산소포화도(SpO₂)는 무엇을 나타낼까요?",
+        choices: ["혈액 속 포도당의 양", "혈액 속 헤모글로빈의 산소 결합 정도", "분당 심장 박동 횟수", "폐에 남아 있는 공기의 양"],
+        answer: 1,
+        explanation: "산소포화도는 혈액 속 헤모글로빈이 산소와 결합한 비율을 말해요."
+      }
+    ];
+
+    const screens = ["start-screen", "quiz-screen", "result-screen"];
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const $ = (id) => document.getElementById(id);
+
+    function showScreen(id) {
+      screens.forEach(screen => $(screen).classList.toggle("active", screen === id));
+    }
+
+    function startQuiz() {
+      current = 0;
+      score = 0;
+      showScreen("quiz-screen");
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      const item = questions[current];
+      $("question-count").textContent = `QUESTION ${current + 1} / ${questions.length}`;
+      $("score-count").textContent = `맞힌 문제 ${score}개`;
+      $("progress-fill").style.width = `${(current / questions.length) * 100}%`;
+      $("question-text").textContent = item.term;
+      $("choices").innerHTML = "";
+      $("feedback").className = "feedback";
+      $("feedback").textContent = "";
+      $("next-btn").style.display = "none";
+
+      item.choices.forEach((choice, index) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.type = "button";
+        button.innerHTML = `<span class="letter">${String.fromCharCode(65 + index)}</span><span></span>`;
+        button.querySelector("span:last-child").textContent = choice;
+        button.addEventListener("click", () => chooseAnswer(index));
+        $("choices").appendChild(button);
+      });
+    }
+
+    function chooseAnswer(index) {
+      if (answered) return;
+      answered = true;
+      const item = questions[current];
+      const buttons = [...$("choices").querySelectorAll(".choice")];
+      buttons.forEach((button, i) => {
+        button.disabled = true;
+        if (i === item.answer) button.classList.add("correct");
+        else if (i === index) button.classList.add("wrong");
+      });
+
+      const isCorrect = index === item.answer;
+      if (isCorrect) score++;
+      $("score-count").textContent = `맞힌 문제 ${score}개`;
+      $("feedback").className = `feedback show ${isCorrect ? "good" : "bad"}`;
+      $("feedback").textContent = `${isCorrect ? "정답이에요! 참 잘했어요 🌷" : "아쉬워요! 정답을 확인해 봐요 💕"} ${item.explanation}`;
+      $("progress-fill").style.width = `${((current + 1) / questions.length) * 100}%`;
+      $("next-btn").textContent = current === questions.length - 1 ? "결과 확인하기 🎀" : "다음 문제 →";
+      $("next-btn").style.display = "block";
+    }
+
+    function nextQuestion() {
+      current++;
+      if (current < questions.length) renderQuestion();
+      else showResult();
+    }
+
+    function showResult() {
+      showScreen("result-screen");
+      $("final-score").textContent = `${score} / ${questions.length}`;
+      $("progress-fill").style.width = "100%";
+      if (score === questions.length) {
+        $("result-emoji").textContent = "🏆";
+        $("result-message").textContent = "완벽해요! 모든 용어를 맞혔어요. 지금처럼 차근차근 공부해 봐요!";
+      } else if (score >= 3) {
+        $("result-emoji").textContent = "🌸";
+        $("result-message").textContent = "잘했어요! 조금 헷갈린 용어만 다시 확인하면 더 잘할 수 있어요.";
+      } else {
+        $("result-emoji").textContent = "🐣";
+        $("result-message").textContent = "처음부터 잘할 필요는 없어요. 해설을 다시 읽고 한 번 더 도전해 봐요!";
+      }
+    }
+
+    $("start-btn").addEventListener("click", startQuiz);
+    $("next-btn").addEventListener("click", nextQuestion);
+    $("restart-btn").addEventListener("click", startQuiz);
+  </script>
+</body>
+</html>
